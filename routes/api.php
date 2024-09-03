@@ -14,18 +14,31 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
-Route::middleware('api')->group(function () {
-    Route::post('/login',[App\Http\Controllers\API\AuthController::class,'login']);
-    Route::post('/register',[App\Http\Controllers\API\AuthController::class,'register']);
+Route::middleware('auth:api')->group(function () {
+    Route::get('/user', [App\Http\Controllers\API\AuthController::class, 'user']);
+    Route::post('logout', [App\Http\Controllers\API\AuthController::class, 'logout']);
 });
+Route::controller(App\Http\Controllers\API\AuthController::class)->group(function () {
+    
+Route::post('register','registerFrom');
+Route::post('login', 'login');
+Route::post('refresh','refresh');
+});
+Route::controller(App\Http\Controllers\PaysController::class)->group(function() {
+    Route::get('allPays', 'index');
+    Route::post('storePays','store');
+    Route::get('showPays/{pays}','show');
+    Route::patch('updatePays/{pays}','updatePays');
+    Route::delete('deletePays/{pays}','destroy');
+});
+    
 Route::group(['middleware' => ['auth:api', 'check.user.type:1']], function () {
-    Route::get('/admin-dashboard', 'AdminController@dashboard');
+    
 });
 
-Route::group(['middleware' => ['auth:api', 'check.user.type:0']], function () {
-    Route::get('/user-dashboard', 'UserController@dashboard');
-});
+// Route::group(['middleware' => ['auth:api', 'check.user.type:0']], function () {
+//     Route::get('/user-dashboard', 'UserController@dashboard');
+// });
 // Route::controller(AuthController::class)->group(function () {
 //     Route::post('login', 'login');
 //     Route::post('register', 'register');
