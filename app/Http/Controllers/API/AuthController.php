@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Jobs\ResetUsersJob;
+use App\Jobs\SendWelcomeUserJob;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -87,7 +89,7 @@ class AuthController extends Controller
         //     'token_type' => 'bearer',
         // ]);
         SendWelcomeUserJob::dispatch($user);
-        SendNotifUserJob::dispatch($user);
+        // SendNotifUserJob::dispatch($user);
         ResetUsersJob::dispatch($user);
         Cache::rememberForever('allusers',function(){
             return User::orderBy('created_at', 'DESC')->get();

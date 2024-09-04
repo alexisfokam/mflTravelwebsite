@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ResetAvisJob;
+use App\Jobs\SendAvisNotification;
 use App\Models\Avis;
 use App\Models\Programme;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -42,10 +45,16 @@ class AvisController extends Controller
         $avis->note = $request->note;
         $avis->commentaire = $request->commentaire;
         $avis->date_creation = Carbon::now();
-        $avis->statut = 'en attente';
+        $avis->statut = 'actif';
         $avis->save();
+         
+        $item = Cache::rememberForever('allvis', function(){
+            return Avis::orderBy('id','desc')->get();
+        });
+         // Dispatcher le job pour envoyer la notification
+         SendAvisNotification::dispatch($avis);
 
-        return response()->json($avis);
+         return response()->json(['message' => 'Avis créé avec succès!', 'review' => $item]);
         
     }
 
@@ -95,6 +104,32 @@ class AvisController extends Controller
         $item = Cache::rememberForever('allavis', function (){
             return Avis::orderBy('id', 'desc')->get();
           });
+          
          return response()->json($item);
     }
+    public function switchAvis($id)
+    {
+
+        $avis = Avis::find($id);
+        if ($avis->statut == "actif") { //actif
+            $avis->statut = "inactif";
+            $avis->update();
+        } else {                  //deactif
+           $avis->statut = "actif";
+           $avis->update();
+        }
+
+        $user = User::select('*')->where('id', $avis->user_id)->first();
+
+        // SwitchPublicationJob::dispatch($pub,$user);
+        ResetAvisJob::dispatch($user);
+        cache::forget('allavis');
+        cache::forget('mypubs-' . $user);
+        $publications =  Cache::rememberForever('allavis', function () {
+            return Avis::orderBy('id', 'DESC')->get();
+        });
+
+        return response()->json($publications);
+    }
+
 }

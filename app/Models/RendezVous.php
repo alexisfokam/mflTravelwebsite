@@ -10,6 +10,15 @@ class RendezVous extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+         'user_id',
+         'dateRdv',
+         'heureDebut',
+         'heureFin',
+         'raison',
+         'statut',
+        ];
+
     public function User(): BelongsTo
 
     {

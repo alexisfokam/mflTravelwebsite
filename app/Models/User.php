@@ -24,12 +24,13 @@ class User extends Authenticatable implements JWTSubject
     protected $fillable = [
         'name',
         'email',
-        'password',
+        'google_id',
+        'password', 
         'type',
         'avatar',
         'status',
     ];
-
+   // Ajoutez dans le modèle User
     /**
      * The attributes that should be hidden for serialization.
      *
